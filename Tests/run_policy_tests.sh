@@ -31,13 +31,20 @@ fi
 
 # Localization keys must be identical across the three language bundles;
 # a missing key renders the raw key string in the UI.
-"$ROOT/Tests/check_strings_alignment.sh"
+bash "$ROOT/Tests/check_strings_alignment.sh"
 
 # Issue #3 regression: a bare `Set.contains` function reference passed to
 # allSatisfy can resolve to a different overload under whole-module -O.
-if rg -n '\.allSatisfy\([A-Za-z0-9_.]+\.contains\)' "$ROOT/ThreeOneOSSix" --glob '*.swift' >/dev/null; then
-  echo "FAIL: bare contains function reference remains (issue #3)" >&2
-  exit 1
+if command -v rg >/dev/null 2>&1; then
+  if rg -n '\.allSatisfy\([A-Za-z0-9_.]+\.contains\)' "$ROOT/ThreeOneOSSix" --glob '*.swift' >/dev/null; then
+    echo "FAIL: bare contains function reference remains (issue #3)" >&2
+    exit 1
+  fi
+else
+  if grep -rEn --include='*.swift' '\.allSatisfy\([A-Za-z0-9_.]+\.contains\)' "$ROOT/ThreeOneOSSix" >/dev/null; then
+    echo "FAIL: bare contains function reference remains (issue #3)" >&2
+    exit 1
+  fi
 fi
 
 # iOS 27 grant-chain hardening guardrails (spec 02-00-ios27-grant-hardening):
